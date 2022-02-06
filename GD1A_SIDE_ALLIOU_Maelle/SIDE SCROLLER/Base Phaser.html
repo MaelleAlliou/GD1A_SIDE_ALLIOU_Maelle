@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" /><title>Side Scroller</title>
+    <script
+src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css"> body { margin: 0; }</style>
+</head>
+
+
+<body>
+    <script type="text/javascript">
+        var config = {
+            type: Phaser.AUTO,
+            width: 4500, height: 600,
+            physics: {
+            default: 'arcade',
+            arcade: {
+            gravity: { y: 600 },
+            debug: false
+            }},
+            scene: {preload: preload, create: create, update: update }
+            };
+            new Phaser.Game(config);
+            function preload(){ 
+            this.load.image('ciel', 'assets/ciel.png');
+            //mes plateformes
+            this.load.image('ground', 'assets/platform.png');
+            this.load.image('platform_2', 'assets/platform.big.png');
+            this.load.image('platform_2_top', 'assets/platform.big.top.png');
+            this.load.image('platform_3', 'assets/platform.small.png');
+            this.load.image('platform_3_top', 'assets/platform.small.top.png');
+            this.load.image('platform_sol', 'assets/platform_sol.png');
+            this.load.image('carte', 'asssets/map.png');
+            this.load.image('column_1', 'assets/column_1.png')
+            this.load.image('platform_1_top', 'assets/platform_1_top.png');
+            //plateformes stairs
+            this.load.image('stairs_1', 'assets/stairs_1.png');
+            this.load.image('stairs_2', 'assets/stairs_2.png');
+            this.load.image('stairs_3', 'assets/stairs_3.png');
+            this.load.image('stairs_4', 'assets/stairs_4.png');
+            this.load.image('stairs_5_reverse', 'assets/stairs_5_reverse.png');
+            this.load.image('stairs_4_reverse', 'assets/stairs_4_reverse.png');
+            this.load.image('stairs_3_reverse', 'assets/stairs_3_reverse.png');
+            this.load.image('stairs_2_reverse', 'assets/stairs_2_reverse.png');
+            //autres
+            this.load.image('star', 'assets/grenouille_2.png');
+            this.load.image('loup_1', 'assets/loup.png');
+            this.load.image('potion', 'assets/potion.png');
+            this.load.image('saphir', 'assets/saphir.png')
+            this.load.image('monstre', 'assets/monstre.png');
+            this.load.image('decors', 'assets/decors.png');
+            this.load.image('grenouille', 'assets/grenouille_2.png');
+            this.load.image('grenouille_info', 'assets/grenouille_info.png');
+            this.load.image('bomb', 'assets/bomb.png');
+            this.load.image('zuria', 'assets/zuria.png');
+            this.load.image('bouquetin', 'assets/bouquetin.gif');
+            this.load.spritesheet('perso','assets/perso_5.png',
+            { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('loup','assets/spritesheet_loup.png',
+            { frameWidth: 48, frameHeight: 32});
+            }
+
+            //variables et fonctions
+            var grenouille;
+            var grenouille_info;
+            var loup;
+            var loup_1;
+            var bouquetin
+            var carteDuNiveau;
+            var map;
+            var saphir;
+            var platforms;
+            var decors;
+            var player;
+            var cursors;
+            var goutte;
+            var stars;
+            var score;
+            score = 0
+            var scoreText;
+            var bombs;
+            var gameOver = false
+             function collectStar(player, star){
+                star.disableBody(true, true); 
+                score += 1;
+                scoreText.setText('Score: ' + score); 
+                if (stars.countActive(true) === 0){
+                    stars.children.iterate(function (child) {
+                        child.enableBody(true, child.x, 0, true, true);
+                    }); 
+                    //variable bombe
+                    var bomb = bombs.create(x, 16, 'bomb');
+                    bomb.setBounce(1);
+                    bomb.setCollideWorldBounds(true);
+                    bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+                    bomb.allowGravity = false; 
+                    }
+
+                    var grenouille = grenouille.create(x, 16, 'grenouille');
+                    grenouille.setBounce(1);
+                    grenouille.setCollideWorldBounds(true);
+                    grenouille.setVelocity(Phaser.Math.Between(-200, 200), 20);
+                    grenouille.allowGravity = false; 
+                    }
+            
+
+            // fonction qui permet de tuer le joueur quand il est en contact avec les bombes
+            function hitBomb(player, bomb){
+                this.physics.pause();
+                player.setTint(0xff0000);
+                player.anims.play('turn');
+                gameOver = true;
+            }
+
+            function hitGrenouille(player, bomb){
+                this.physics.pause();
+                player.setTint(0xff0000);
+                player.anims.play('turn');
+                gameOver = true;
+            }
+
+
+            //CREATE FUNCTION
+            function create(){
+                cursors = this.input.keyboard.createCursorKeys();
+               // background
+                this.add.image(400, 300, 'ciel');
+                this.add.image(1422, 300, 'ciel');
+                this.add.image(2444, 300, 'ciel');
+                this.add.image(3466, 300, 'ciel');
+                this.add.image(4588, 300, 'ciel');
+
+                //bouquetins
+                bouquetin = this.physics.add.staticGroup();
+                bouquetin.create (595, 455, 'bouquetin');
+                bouquetin.create (1147, 248, 'bouquetin');
+                bouquetin.create (2182, 488, 'bouquetin');
+                bouquetin.create (3350, 174, 'bouquetin');
+                bouquetin.create (3180, 174, 'bouquetin');
+
+
+                //potions
+                goutte = this.physics.add.staticGroup();
+                goutte.create (998, 268, 'potion');
+                goutte.create (2215, 488, 'potion');
+
+                //saphirs
+                saphir= this.physics.add.staticGroup();
+                saphir.create (260, 405, 'saphir');
+                saphir.create (290, 405, 'saphir');
+                saphir.create (320, 405, 'saphir');
+                //
+                saphir.create (1125, 425, 'saphir');
+                saphir.create (1155, 405, 'saphir');
+                saphir.create (1185, 405, 'saphir');
+                saphir.create (1215, 425, 'saphir');
+                //
+                saphir.create (1450, 305, 'saphir');
+                saphir.create (1500, 305, 'saphir');
+                saphir.create (1550, 305, 'saphir');
+                saphir.create (1600, 305, 'saphir');
+                saphir.create (1650, 305, 'saphir');
+                saphir.create (1700, 305, 'saphir');
+                saphir.create (1750, 305, 'saphir');
+                //
+                saphir.create (2560, 475, 'saphir');
+                saphir.create (2590, 455, 'saphir');
+                saphir.create (2620, 455, 'saphir');
+                saphir.create (2650, 475, 'saphir');
+               
+                //loups
+                loup_1= this.physics.add.staticGroup();
+                loup_1.create (890, 520, 'loup_1');
+                loup_1.create (1695, 490, 'loup_1');
+                loup_1.create (2605, 520, 'loup_1');
+                loup_1.create (3210, 347, 'loup_1');
+
+                //décors
+                decors = this.physics.add.staticGroup();
+                decors.create(200, 268, 'decors');
+
+
+
+                //plateformes
+                platforms = this.physics.add.staticGroup();
+                platforms.create(400, 568, 'platform_2').setScale(2).refreshBody();
+                //sol
+                platforms.create(180, 568, 'platform_sol');
+                platforms.create(564, 568, 'platform_sol');
+                platforms.create(946, 568, 'platform_sol');
+                //2-3
+                platforms.create(290, 435, 'platform_3');
+                //
+                platforms.create(0, 520, 'platform_2_top');
+                platforms.create(880, 388, 'platform_3_top');
+                platforms.create (1000, 300, 'platform_1_top');
+                platforms.create (1150, 280, 'platform_1_top');
+                platforms.create (1320, 320, 'platform_1_top');
+                platforms.create(600, 520, 'platform_2_top');
+                platforms.create(600, 488, 'platform_3_top');
+                //stairs
+                platforms.create(1057, 520, 'stairs_4');
+                platforms.create(1073, 490, 'stairs_3');
+                platforms.create(1089, 460, 'stairs_2');
+                //ground
+                platforms.create(1600, 350, 'platform_2_top');
+                platforms.create(1400, 568, 'platform_sol');
+                platforms.create(1288, 520, 'stairs_5_reverse');
+                platforms.create(1273, 490, 'stairs_4_reverse');
+                platforms.create(1257, 460, 'stairs_3_reverse');
+                //
+                platforms.create(1700, 568, 'column_1');
+                platforms.create(1800, 600, 'column_1');
+                //
+                platforms.create (2100, 568, 'platform_sol');
+                platforms.create (2100, 520, 'platform_2_top');
+                platforms.create (2260, 500, 'column_1');
+                platforms.create (2212, 420, 'stairs_4');
+                platforms.create (2000, 440, 'platform_1_top');
+                //
+                platforms.create (2600, 568, 'platform_sol');
+                platforms.create (2728, 520, 'stairs_3');
+                platforms.create (2472, 520, 'stairs_4_reverse');
+                //
+                platforms.create (2900, 568, 'column_1');
+                platforms.create (3025, 450, 'platform_3');
+                platforms.create (3200, 380, 'platform_3');
+                platforms.create (3050, 295, 'platform_3');
+                platforms.create (3250, 205, 'platform_2_top');
+                //
+                platforms.create (3550, 350, 'platform_1_top');
+                platforms.create (3550, 568, 'platform_sol');
+    
+
+                //colliders
+                player = this.physics.add.sprite(100, 450, 'perso');
+                player.setBounce(0.2);
+                player.setCollideWorldBounds(true);
+                this.physics.add.collider(player, platforms, loup);
+
+                //animation/collider loup ?
+                loup = this.physics.add.sprite (300, 450, 'loup');
+                loup.setCollideWorldBounds(true);
+                this.physics.add.collider(loup, platforms);
+        
+
+
+
+                //score
+                scoreText=this.add.text(16,16,'Gemmes : 0',{fontSize:'32px',fill:'#000'});
+
+                //étoiles
+                stars = this.physics.add.group({
+                    key: 'grenouille_info', repeat: 0,
+                    setXY: { x: 25, y: 0, stepX: 170 }
+                });
+                stars.children.iterate(function (child) {
+                    child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+                }); 
+                this.physics.add.collider(stars, platforms);
+               
+                this.physics.add.overlap(player, stars, collectStar, null, this);
+
+                //collision bombe
+                bombs = this.physics.add.group();
+                this.physics.add.collider(bombs, platforms);
+                this.physics.add.collider(player, bombs, hitBomb, null, this);
+
+                //collision grenouille
+                grenouille = this.physics.add.group();
+                this.physics.add.collider(bombs, platforms);
+                this.physics.add.collider(player, bombs, hitBomb, null, this);
+                this.physics.add.collider(stars, platforms, player);
+
+                //frames
+                this.anims.create({
+                    key: 'left',
+                    frames: this.anims.generateFrameNumbers('perso', {start:0,end:3}),
+                    frameRate: 10,
+                    repeat: -1
+                });
+                this.anims.create({
+                    key: 'turn',
+                    frames: [ { key: 'perso', frame: 4 } ],
+                    frameRate: 20
+                });
+                this.anims.create({
+                    key: 'right',
+                    frames: this.anims.generateFrameNumbers('perso', {start:5,end:8}),
+                    frameRate: 10,
+                    repeat: -1
+                });
+
+                //caméra
+                this.cameras.main.setBounds(0,0, 4000, 448);
+                this.cameras.main.setSize(1220, 1080);
+                this.cameras.main.startFollow(player);
+            }
+            function update(){
+                if (gameOver){return;}
+
+                if (cursors.left.isDown){ //si la touche gauche est appuyée
+                    player.setVelocityX(-160); //alors vitesse négative en X
+                    player.anims.play('left', true); //et animation => gauche
+                }
+                else if (cursors.right.isDown){ //sinon si la touche droite est appuyée
+                    player.setVelocityX(160); //alors vitesse positive en X
+                    player.anims.play('right', true); //et animation => droite
+                }
+                else{ // sinon
+                    player.setVelocityX(0); //vitesse nulle
+                    player.anims.play('turn'); //animation fait face caméra
+                }
+                if (cursors.up.isDown && player.body.touching.down){
+                    //si touche haut appuyée ET que le perso touche le sol
+                    player.setVelocityY(-330); //alors vitesse verticale négative
+                    //(on saute)
+                }
+            }
+    </script>
+</body>
+</html>
